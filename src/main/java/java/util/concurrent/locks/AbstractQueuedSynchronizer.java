@@ -661,7 +661,7 @@ public abstract class AbstractQueuedSynchronizer
          * to clear in anticipation of signalling.  It is OK if this
          * fails or if status is changed by waiting thread.
          */
-        //当前节点状态
+        //将head节点的状态置为0
         int ws = node.waitStatus;
         if (ws < 0)
             compareAndSetWaitStatus(node, ws, 0);
@@ -819,6 +819,7 @@ public abstract class AbstractQueuedSynchronizer
     private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
         //前驱节点状态
         int ws = pred.waitStatus;
+        //上一节点的状态是SIGNAL，则需要阻塞
         if (ws == Node.SIGNAL)
             /*
              * This node has already set status asking a release
@@ -844,6 +845,7 @@ public abstract class AbstractQueuedSynchronizer
              * retry to make sure it cannot acquire before parking.
              */
             //Condition，Propagate，将前置节点状态设置为signal
+            //将前任节点的状态修改为SIGNAL
             compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
         }
         return false;
@@ -863,6 +865,7 @@ public abstract class AbstractQueuedSynchronizer
      */
     //阻塞当前线程，返回中断状态
     private final boolean parkAndCheckInterrupt() {
+        //阻塞当前线程，并返回中断状态
         LockSupport.park(this);
         return Thread.interrupted();
     }
@@ -891,7 +894,9 @@ public abstract class AbstractQueuedSynchronizer
             //中断标识
             boolean interrupted = false;
             for (;;) {
+                //找上一个节点
                 final Node p = node.predecessor();
+                //如果是头节点则尝试获取锁
                 if (p == head && tryAcquire(arg)) {
                     setHead(node);
                     p.next = null; // help GC
