@@ -158,6 +158,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             return free;
         }
 
+        //排他锁的拥有者是否是当前线程
         protected final boolean isHeldExclusively() {
             // While we must in general read state before owner,
             // we don't need to do so to check if current thread is owner
@@ -232,12 +233,14 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             final Thread current = Thread.currentThread();
             int c = getState();
             if (c == 0) {
+                //抢占式,不按照FIFO的顺序
                 if (!hasQueuedPredecessors() &&
                     compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
                 }
             }
+            //当前线程，累加states
             else if (current == getExclusiveOwnerThread()) {
                 int nextc = c + acquires;
                 if (nextc < 0)
@@ -253,6 +256,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * Creates an instance of {@code ReentrantLock}.
      * This is equivalent to using {@code ReentrantLock(false)}.
      */
+    //默认非公平锁
     public ReentrantLock() {
         sync = new NonfairSync();
     }
@@ -263,6 +267,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      *
      * @param fair {@code true} if this lock should use a fair ordering policy
      */
+    //初始化锁类型
     public ReentrantLock(boolean fair) {
         sync = fair ? new FairSync() : new NonfairSync();
     }
@@ -281,6 +286,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * purposes and lies dormant until the lock has been acquired,
      * at which time the lock hold count is set to one.
      */
+    //请求锁
     public void lock() {
         sync.lock();
     }
@@ -331,6 +337,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      *
      * @throws InterruptedException if the current thread is interrupted
      */
+    //可被中断
     public void lockInterruptibly() throws InterruptedException {
         sync.acquireInterruptibly(1);
     }
@@ -361,6 +368,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      *         current thread, or the lock was already held by the current
      *         thread; and {@code false} otherwise
      */
+    //尝试获取锁,立即返回
     public boolean tryLock() {
         return sync.nonfairTryAcquire(1);
     }
@@ -437,6 +445,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * @throws InterruptedException if the current thread is interrupted
      * @throws NullPointerException if the time unit is null
      */
+    //规定时间内尝试获取锁
     public boolean tryLock(long timeout, TimeUnit unit)
             throws InterruptedException {
         return sync.tryAcquireNanos(1, unit.toNanos(timeout));
@@ -453,6 +462,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * @throws IllegalMonitorStateException if the current thread does not
      *         hold this lock
      */
+    //释放锁
     public void unlock() {
         sync.release(1);
     }
@@ -496,6 +506,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      *
      * @return the Condition object
      */
+    //生成条件对象
     public Condition newCondition() {
         return sync.newCondition();
     }
