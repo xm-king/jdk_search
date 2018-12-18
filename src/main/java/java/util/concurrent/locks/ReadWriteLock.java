@@ -122,6 +122,7 @@ public interface ReadWriteLock {
      *
      * @return the lock used for reading
      */
+    //读锁
     Lock readLock();
 
     /**
@@ -129,5 +130,6 @@ public interface ReadWriteLock {
      *
      * @return the lock used for writing
      */
+    //写锁
     Lock writeLock();
 }
