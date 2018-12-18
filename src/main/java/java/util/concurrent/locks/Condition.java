@@ -228,6 +228,7 @@ public interface Condition {
      * @throws InterruptedException if the current thread is interrupted
      *         (and interruption of thread suspension is supported)
      */
+    //当前线程在接收到信号或者中断之前处于等待状态
     void await() throws InterruptedException;
 
     /**
@@ -264,6 +265,7 @@ public interface Condition {
      * thrown (such as {@link IllegalMonitorStateException}) and the
      * implementation must document that fact.
      */
+    //不可中断
     void awaitUninterruptibly();
 
     /**
@@ -355,6 +357,7 @@ public interface Condition {
      * @throws InterruptedException if the current thread is interrupted
      *         (and interruption of thread suspension is supported)
      */
+    //指定等待时间
     long awaitNanos(long nanosTimeout) throws InterruptedException;
 
     /**
@@ -370,6 +373,7 @@ public interface Condition {
      * @throws InterruptedException if the current thread is interrupted
      *         (and interruption of thread suspension is supported)
      */
+    //指定等待时间单位
     boolean await(long time, TimeUnit unit) throws InterruptedException;
 
     /**
@@ -465,6 +469,7 @@ public interface Condition {
      * not held. Typically, an exception such as {@link
      * IllegalMonitorStateException} will be thrown.
      */
+    //唤醒一个等待线程
     void signal();
 
     /**
@@ -483,5 +488,6 @@ public interface Condition {
      * not held. Typically, an exception such as {@link
      * IllegalMonitorStateException} will be thrown.
      */
+    //唤醒所有等待线程
     void signalAll();
 }

@@ -535,6 +535,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * simpler to use expressions such as {@code n - (n >>> 2)} for
      * the associated resizing threshold.
      */
+    //负载因子
     private static final float LOAD_FACTOR = 0.75f;
 
     /**
