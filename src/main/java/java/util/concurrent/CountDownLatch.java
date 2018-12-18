@@ -170,6 +170,7 @@ public class CountDownLatch {
         }
 
         protected int tryAcquireShared(int acquires) {
+            //如果计数器不等于0，那么R值会一直小于0，获取共享锁失败
             return (getState() == 0) ? 1 : -1;
         }
 
@@ -179,6 +180,7 @@ public class CountDownLatch {
                 int c = getState();
                 if (c == 0)
                     return false;
+                //将锁状态减1
                 int nextc = c-1;
                 if (compareAndSetState(c, nextc))
                     return nextc == 0;

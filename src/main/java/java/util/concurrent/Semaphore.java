@@ -262,6 +262,7 @@ public class Semaphore implements java.io.Serializable {
      *        must occur before any acquires will be granted.
      */
     public Semaphore(int permits) {
+        //许可数量，默认非公平锁
         sync = new NonfairSync(permits);
     }
 

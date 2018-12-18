@@ -198,6 +198,7 @@ public class CyclicBarrier {
     private int dowait(boolean timed, long nanos)
         throws InterruptedException, BrokenBarrierException,
                TimeoutException {
+        //获取锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -210,8 +211,9 @@ public class CyclicBarrier {
                 breakBarrier();
                 throw new InterruptedException();
             }
-
+            //进来一个线程，count减1
             int index = --count;
+            //index==0时，触发Runnable任务
             if (index == 0) {  // tripped
                 boolean ranAction = false;
                 try {
@@ -219,6 +221,7 @@ public class CyclicBarrier {
                     if (command != null)
                         command.run();
                     ranAction = true;
+                    //唤醒所有等待任务
                     nextGeneration();
                     return 0;
                 } finally {
@@ -230,6 +233,7 @@ public class CyclicBarrier {
             // loop until tripped, broken, interrupted, or timed out
             for (;;) {
                 try {
+                    //条件等待
                     if (!timed)
                         trip.await();
                     else if (nanos > 0L)
@@ -274,10 +278,13 @@ public class CyclicBarrier {
      *        tripped, or {@code null} if there is no action
      * @throws IllegalArgumentException if {@code parties} is less than 1
      */
+
     public CyclicBarrier(int parties, Runnable barrierAction) {
         if (parties <= 0) throw new IllegalArgumentException();
+        //参与者数量
         this.parties = parties;
         this.count = parties;
+        //到达屏障时，执行barrierAction
         this.barrierCommand = barrierAction;
     }
 
@@ -291,6 +298,7 @@ public class CyclicBarrier {
      * @throws IllegalArgumentException if {@code parties} is less than 1
      */
     public CyclicBarrier(int parties) {
+        //参与者
         this(parties, null);
     }
 
