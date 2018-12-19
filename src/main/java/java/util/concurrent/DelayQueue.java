@@ -69,8 +69,9 @@ import java.util.*;
  */
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     implements BlockingQueue<E> {
-
+    //可重入锁
     private final transient ReentrantLock lock = new ReentrantLock();
+    //支持优先级
     private final PriorityQueue<E> q = new PriorityQueue<E>();
 
     /**
@@ -96,6 +97,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
      * at the head of the queue or a new thread may need to
      * become leader.
      */
+    //等待条件
     private final Condition available = lock.newCondition();
 
     /**
@@ -137,6 +139,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //有限队列插入元素
             q.offer(e);
             if (q.peek() == e) {
                 leader = null;
@@ -210,6 +213,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
                 if (first == null)
                     available.await();
                 else {
+                    //获取首元素的超时时间
                     long delay = first.getDelay(NANOSECONDS);
                     if (delay <= 0)
                         return q.poll();
