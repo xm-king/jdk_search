@@ -91,15 +91,19 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     private static final long serialVersionUID = -817911632652898426L;
 
     /** The queued items */
+    //队列元素
     final Object[] items;
 
     /** items index for next take, poll, peek or remove */
+    //出队列索引
     int takeIndex;
 
     /** items index for next put, offer, or add */
+    //入队列索引
     int putIndex;
 
     /** Number of elements in the queue */
+    //队列元素个数
     int count;
 
     /*
@@ -108,12 +112,15 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      */
 
     /** Main lock guarding all access */
+    //重入锁
     final ReentrantLock lock;
 
     /** Condition for waiting takes */
+    //出队列等待条件
     private final Condition notEmpty;
 
     /** Condition for waiting puts */
+    //入队列等待条件
     private final Condition notFull;
 
     /**
@@ -154,6 +161,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      * Inserts element at current put position, advances, and signals.
      * Call only when holding lock.
      */
+    //入队列
     private void enqueue(E x) {
         // assert lock.getHoldCount() == 1;
         // assert items[putIndex] == null;
@@ -169,6 +177,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      * Extracts element at current take position, advances, and signals.
      * Call only when holding lock.
      */
+    //出队列
     private E dequeue() {
         // assert lock.getHoldCount() == 1;
         // assert items[takeIndex] != null;
@@ -252,6 +261,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     public ArrayBlockingQueue(int capacity, boolean fair) {
         if (capacity <= 0)
             throw new IllegalArgumentException();
+        //初始化
         this.items = new Object[capacity];
         lock = new ReentrantLock(fair);
         notEmpty = lock.newCondition();
@@ -349,6 +359,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
+            //已满，需要等待
             while (count == items.length)
                 notFull.await();
             enqueue(e);
@@ -376,6 +387,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
             while (count == items.length) {
                 if (nanos <= 0)
                     return false;
+                //等待超时时间
                 nanos = notFull.awaitNanos(nanos);
             }
             enqueue(e);
@@ -399,6 +411,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
+            //队列中已无元素,等待
             while (count == 0)
                 notEmpty.await();
             return dequeue();
