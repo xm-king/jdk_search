@@ -124,6 +124,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
      * @return {@code true} (as specified by {@link Collection#add})
      * @throws NullPointerException if the specified element is null
      */
+    //插入元素
     public boolean add(E e) {
         return offer(e);
     }
@@ -139,7 +140,7 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            //有限队列插入元素
+            //优先队列插入元素
             q.offer(e);
             if (q.peek() == e) {
                 leader = null;

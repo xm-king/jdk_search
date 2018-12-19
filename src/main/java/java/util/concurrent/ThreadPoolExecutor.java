@@ -441,6 +441,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * return null even if it may later return non-null when delays
      * expire.
      */
+    //工作队列
     private final BlockingQueue<Runnable> workQueue;
 
     /**
@@ -462,6 +463,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Set containing all worker threads in pool. Accessed only when
      * holding mainLock.
      */
+    //工作线程
     private final HashSet<Worker> workers = new HashSet<Worker>();
 
     /**
