@@ -846,7 +846,7 @@ public abstract class AbstractQueuedSynchronizer
              * retry to make sure it cannot acquire before parking.
              */
             //Condition，Propagate，将前置节点状态设置为signal
-            //将前任节点的状态修改为SIGNAL
+            //将前任节点的状态修改为SIGNAL,再重试一次
             compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
         }
         return false;
@@ -888,7 +888,7 @@ public abstract class AbstractQueuedSynchronizer
      * @param arg the acquire argument
      * @return {@code true} if interrupted while waiting
      */
-    //自旋等待获取资源
+    //自旋等待获取资源,返回是否中断过
     final boolean acquireQueued(final Node node, int arg) {
         boolean failed = true;
         try {
@@ -1394,6 +1394,7 @@ public abstract class AbstractQueuedSynchronizer
      *        and can represent anything you like.
      * @return the value returned from {@link #tryReleaseShared}
      */
+    //释放共享状态
     public final boolean releaseShared(int arg) {
         if (tryReleaseShared(arg)) {
             doReleaseShared();
@@ -1497,6 +1498,7 @@ public abstract class AbstractQueuedSynchronizer
      * @return {@code true} if the given thread is on the queue
      * @throws NullPointerException if the thread is null
      */
+    //判断当前线程是否在同步队列中
     public final boolean isQueued(Thread thread) {
         if (thread == null)
             throw new NullPointerException();
@@ -1515,6 +1517,7 @@ public abstract class AbstractQueuedSynchronizer
      * is not the first queued thread.  Used only as a heuristic in
      * ReentrantReadWriteLock.
      */
+    //判断第一个节点是否共享锁
     final boolean apparentlyFirstQueuedIsExclusive() {
         Node h, s;
         return (h = head) != null &&
@@ -1566,6 +1569,7 @@ public abstract class AbstractQueuedSynchronizer
      *         is at the head of the queue or the queue is empty
      * @since 1.7
      */
+    //等待队列中的线程等待时间是否比当前线程更早
     public final boolean hasQueuedPredecessors() {
         // The correctness of this depends on head being initialized
         // before tail and on head.next being accurate if the current
@@ -1576,8 +1580,8 @@ public abstract class AbstractQueuedSynchronizer
         Node h = head;
         Node s;
         // 1. 头节点不等于尾节点
-        // 2. 同步队列的第一个节点不为null
-        // 3. 当前线程是同步队列的第一个节点
+        // 2. 同步队列的第一个节点为null
+        // 3. 当前线程不是同步队列的第一个节点
         return h != t &&
             ((s = h.next) == null || s.thread != Thread.currentThread());
     }
@@ -1595,6 +1599,7 @@ public abstract class AbstractQueuedSynchronizer
      *
      * @return the estimated number of threads waiting to acquire
      */
+    //等待队列长度
     public final int getQueueLength() {
         int n = 0;
         for (Node p = tail; p != null; p = p.prev) {
@@ -1615,6 +1620,7 @@ public abstract class AbstractQueuedSynchronizer
      *
      * @return the collection of threads
      */
+    //同步队列线程列表
     public final Collection<Thread> getQueuedThreads() {
         ArrayList<Thread> list = new ArrayList<Thread>();
         for (Node p = tail; p != null; p = p.prev) {
@@ -1633,6 +1639,7 @@ public abstract class AbstractQueuedSynchronizer
      *
      * @return the collection of threads
      */
+    //独占对象队列线程
     public final Collection<Thread> getExclusiveQueuedThreads() {
         ArrayList<Thread> list = new ArrayList<Thread>();
         for (Node p = tail; p != null; p = p.prev) {
@@ -1653,6 +1660,7 @@ public abstract class AbstractQueuedSynchronizer
      *
      * @return the collection of threads
      */
+    //共享对象队列线程
     public final Collection<Thread> getSharedQueuedThreads() {
         ArrayList<Thread> list = new ArrayList<Thread>();
         for (Node p = tail; p != null; p = p.prev) {
@@ -1783,7 +1791,7 @@ public abstract class AbstractQueuedSynchronizer
      * @param node the condition node for this wait
      * @return previous sync state
      */
-    //释放锁
+    //释放当前线程所拥有的锁
     final int fullyRelease(Node node) {
         boolean failed = true;
         try {
@@ -1874,6 +1882,7 @@ public abstract class AbstractQueuedSynchronizer
      *         not associated with this synchronizer
      * @throws NullPointerException if the condition is null
      */
+    //获取条件对象等待的线程列表
     public final Collection<Thread> getWaitingThreads(ConditionObject condition) {
         if (!owns(condition))
             throw new IllegalArgumentException("Not owner");
@@ -1895,6 +1904,7 @@ public abstract class AbstractQueuedSynchronizer
      * <p>This class is Serializable, but all fields are transient,
      * so deserialized conditions have no waiters.
      */
+    //条件等待对象
     public class ConditionObject implements Condition, java.io.Serializable {
         private static final long serialVersionUID = 1173984872572414699L;
         /** First node of condition queue. */
@@ -2088,8 +2098,10 @@ public abstract class AbstractQueuedSynchronizer
         private void reportInterruptAfterWait(int interruptMode)
             throws InterruptedException {
             if (interruptMode == THROW_IE)
+                //抛出异常
                 throw new InterruptedException();
             else if (interruptMode == REINTERRUPT)
+                //自我标记中断状态
                 selfInterrupt();
         }
 
@@ -2115,14 +2127,14 @@ public abstract class AbstractQueuedSynchronizer
             int savedState = fullyRelease(node);
             int interruptMode = 0;
             //检查当前线程节点是否在同步队列,如果不在，说明该线程不具备竞争锁的条件，
-            //则需要继续等待，直到检测到该节点在同步队列上
+            //则需要继续循环等待，直到检测到该节点在同步队列上
             while (!isOnSyncQueue(node)) {
-                //线程挂起
+                //线程挂起阻塞
                 LockSupport.park(this);
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
-            //竞争同步状态
+            //重新竞争同步状态
             if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
                 interruptMode = REINTERRUPT;
             //清理队列中不是等待条件的节点
@@ -2278,6 +2290,7 @@ public abstract class AbstractQueuedSynchronizer
          * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
          *         returns {@code false}
          */
+        //判断是否有线程阻塞在此条件对象上
         protected final boolean hasWaiters() {
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
@@ -2297,6 +2310,7 @@ public abstract class AbstractQueuedSynchronizer
          * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
          *         returns {@code false}
          */
+        //获取等待队列长度
         protected final int getWaitQueueLength() {
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
@@ -2317,6 +2331,7 @@ public abstract class AbstractQueuedSynchronizer
          * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
          *         returns {@code false}
          */
+        //获取等待的线程列表
         protected final Collection<Thread> getWaitingThreads() {
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
