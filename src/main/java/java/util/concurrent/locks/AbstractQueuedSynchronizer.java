@@ -673,6 +673,7 @@ public abstract class AbstractQueuedSynchronizer
          * traverse backwards from tail to find the actual
          * non-cancelled successor.
          */
+        //找到下一个需要唤醒的节点
         Node s = node.next;
         if (s == null || s.waitStatus > 0) {
             s = null;
@@ -729,6 +730,7 @@ public abstract class AbstractQueuedSynchronizer
      * @param node the node
      * @param propagate the return value from a tryAcquireShared
      */
+    //设置head
     private void setHeadAndPropagate(Node node, int propagate) {
         Node h = head; // Record old head for check below
         setHead(node);
@@ -846,7 +848,8 @@ public abstract class AbstractQueuedSynchronizer
              * retry to make sure it cannot acquire before parking.
              */
             //Condition，Propagate，将前置节点状态设置为signal
-            //将前任节点的状态修改为SIGNAL,再重试一次
+            //将前任节点的状态修改为SIGNAL
+            //并不会立即block，再重试一次，确保在block之前不能获得锁
             compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
         }
         return false;
@@ -987,6 +990,7 @@ public abstract class AbstractQueuedSynchronizer
      * @param arg the acquire argument
      */
     private void doAcquireShared(int arg) {
+        //添加一个共享模式Node到队尾
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
@@ -994,8 +998,11 @@ public abstract class AbstractQueuedSynchronizer
             for (;;) {
                 final Node p = node.predecessor();
                 if (p == head) {
+                    //尝试获取锁
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
+                        //共享锁模式下，允许多个线程持有一把锁的。
+                        //唤醒队列中等待的线程，唤醒后继线程。实现propagate语义
                         setHeadAndPropagate(node, r);
                         p.next = null; // help GC
                         if (interrupted)
@@ -1004,6 +1011,7 @@ public abstract class AbstractQueuedSynchronizer
                         return;
                     }
                 }
+                //是否需要阻塞线程
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
                     interrupted = true;
@@ -1177,7 +1185,7 @@ public abstract class AbstractQueuedSynchronizer
      *         correctly.
      * @throws UnsupportedOperationException if shared mode is not supported
      */
-    //获取共享锁
+    //获取共享锁，同步器自定义实现
     protected int tryAcquireShared(int arg) {
         throw new UnsupportedOperationException();
     }
@@ -1335,6 +1343,7 @@ public abstract class AbstractQueuedSynchronizer
      *        {@link #tryAcquireShared} but is otherwise uninterpreted
      *        and can represent anything you like.
      */
+    //共享模式下获取资源
     public final void acquireShared(int arg) {
         if (tryAcquireShared(arg) < 0)
             doAcquireShared(arg);
