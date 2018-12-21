@@ -401,6 +401,7 @@ public class ReentrantReadWriteLock
              *    queue policy allows it. If so, update state
              *    and set owner.
              */
+            //获取当前线程
             Thread current = Thread.currentThread();
             int c = getState();
             //写锁
@@ -478,9 +479,10 @@ public class ReentrantReadWriteLock
              *    apparently not eligible or CAS fails or count
              *    saturated, chain to version with full retry loop.
              */
+            //获取当前线程
             Thread current = Thread.currentThread();
             int c = getState();
-            //判断是否写锁
+            //判断是否写锁并且锁拥有者不是当前线程，返回-1失败
             if (exclusiveCount(c) != 0 &&
                 getExclusiveOwnerThread() != current)
                 return -1;
@@ -498,6 +500,7 @@ public class ReentrantReadWriteLock
                     //重入数++
                     firstReaderHoldCount++;
                 } else {
+                    //本地线程变量，线程占用共享锁数量+1
                     HoldCounter rh = cachedHoldCounter;
                     if (rh == null || rh.tid != getThreadId(current))
                         cachedHoldCounter = rh = readHolds.get();

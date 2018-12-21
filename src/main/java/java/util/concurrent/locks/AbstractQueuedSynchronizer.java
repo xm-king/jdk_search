@@ -692,6 +692,7 @@ public abstract class AbstractQueuedSynchronizer
      * propagation. (Note: For exclusive mode, release just amounts
      * to calling unparkSuccessor of head if it needs signal.)
      */
+    //释放共享锁-唤醒后继即诶单并保证后继节点的资源传播
     private void doReleaseShared() {
         /*
          * Ensure that a release propagates, even if there are other
@@ -704,13 +705,15 @@ public abstract class AbstractQueuedSynchronizer
          * unparkSuccessor, we need to know if CAS to reset status
          * fails, if so rechecking.
          */
+        //自旋，确保释放后唤醒后继节点
         for (;;) {
             Node h = head;
             if (h != null && h != tail) {
                 int ws = h.waitStatus;
                 if (ws == Node.SIGNAL) {
                     if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
-                        continue;            // loop to recheck cases
+                        continue;// loop to recheck cases
+                    //唤醒后继节点
                     unparkSuccessor(h);
                 }
                 else if (ws == 0 &&
@@ -730,26 +733,10 @@ public abstract class AbstractQueuedSynchronizer
      * @param node the node
      * @param propagate the return value from a tryAcquireShared
      */
-    //设置head
+    //设置head，如果由剩余资源可以再唤醒后续的节点
     private void setHeadAndPropagate(Node node, int propagate) {
         Node h = head; // Record old head for check below
         setHead(node);
-        /*
-         * Try to signal next queued node if:
-         *   Propagation was indicated by caller,
-         *     or was recorded (as h.waitStatus either before
-         *     or after setHead) by a previous operation
-         *     (note: this uses sign-check of waitStatus because
-         *      PROPAGATE status may transition to SIGNAL.)
-         * and
-         *   The next node is waiting in shared mode,
-         *     or we don't know, because it appears null
-         *
-         * The conservatism in both of these checks may cause
-         * unnecessary wake-ups, but only when there are multiple
-         * racing acquires/releases, so most need signals now or soon
-         * anyway.
-         */
         if (propagate > 0 || h == null || h.waitStatus < 0 ||
             (h = head) == null || h.waitStatus < 0) {
             Node s = node.next;
@@ -1001,8 +988,7 @@ public abstract class AbstractQueuedSynchronizer
                     //尝试获取锁
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
-                        //共享锁模式下，允许多个线程持有一把锁的。
-                        //唤醒队列中等待的线程，唤醒后继线程。实现propagate语义
+                        //共享锁模式下，允许多个线程持有一把锁的。唤醒队列中等待的线程，唤醒后继线程。实现propagate语义
                         setHeadAndPropagate(node, r);
                         p.next = null; // help GC
                         if (interrupted)
@@ -1185,7 +1171,7 @@ public abstract class AbstractQueuedSynchronizer
      *         correctly.
      * @throws UnsupportedOperationException if shared mode is not supported
      */
-    //获取共享锁，同步器自定义实现
+    //获取共享锁，同步器自定义实现,返回剩余的资源数
     protected int tryAcquireShared(int arg) {
         throw new UnsupportedOperationException();
     }
@@ -2127,6 +2113,7 @@ public abstract class AbstractQueuedSynchronizer
          * <li> If interrupted while blocked in step 4, throw InterruptedException.
          * </ol>
          */
+        //使当前线程在被唤醒或被中断之前一直处于等待状态
         public final void await() throws InterruptedException {
             if (Thread.interrupted())
                 throw new InterruptedException();
@@ -2140,6 +2127,7 @@ public abstract class AbstractQueuedSynchronizer
             while (!isOnSyncQueue(node)) {
                 //线程挂起阻塞
                 LockSupport.park(this);
+                //线程被中断，跳出循环
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
