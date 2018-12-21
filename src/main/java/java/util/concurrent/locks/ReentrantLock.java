@@ -132,7 +132,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             //同步状态
             int c = getState();
             if (c == 0) {
-                //获取锁成功，设置为当前线程所有
+                //直接尝试获取锁,获取锁成功，设置为当前线程所有
                 if (compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
@@ -149,6 +149,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             return false;
         }
 
+        //释放锁
         protected final boolean tryRelease(int releases) {
             //减掉 releases
             int c = getState() - releases;
