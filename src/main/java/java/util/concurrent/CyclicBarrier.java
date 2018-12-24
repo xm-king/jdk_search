@@ -283,6 +283,7 @@ public class CyclicBarrier {
         if (parties <= 0) throw new IllegalArgumentException();
         //参与者数量
         this.parties = parties;
+        //等待的数量
         this.count = parties;
         //到达屏障时，执行barrierAction
         this.barrierCommand = barrierAction;

@@ -170,12 +170,13 @@ public class CountDownLatch {
         }
 
         protected int tryAcquireShared(int acquires) {
-            //如果计数器不等于0，那么R值会一直小于0，获取共享锁失败
+            //如果计数器不等于0，那么R值会一直小于0，获取共享锁失败;计数器等于0，获取共享锁成功
             return (getState() == 0) ? 1 : -1;
         }
 
         protected boolean tryReleaseShared(int releases) {
             // Decrement count; signal when transition to zero
+            //释放共享锁，将锁的状态减1
             for (;;) {
                 int c = getState();
                 if (c == 0)
