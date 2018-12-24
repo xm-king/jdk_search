@@ -133,7 +133,7 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
 
     /**
      * The maximum size of array to allocate.
-     * Some VMs reserve some header words in an array.
+     * Some VMs  some header words in an array.
      * Attempts to allocate larger arrays may result in
      * OutOfMemoryError: Requested array size exceeds VM limit
      */
@@ -150,7 +150,7 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
     private transient Object[] queue;
 
     /**
-     * The number of elements in the priority queue.
+     * The numberreserve of elements in the priority queue.
      */
     private transient int size;
 

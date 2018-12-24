@@ -152,21 +152,26 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
     private transient Node<E> last;
 
     /** Lock held by take, poll, etc */
+    //出列锁
     private final ReentrantLock takeLock = new ReentrantLock();
 
     /** Wait queue for waiting takes */
+    //队列非空条件对象
     private final Condition notEmpty = takeLock.newCondition();
 
     /** Lock held by put, offer, etc */
+    //入队列锁
     private final ReentrantLock putLock = new ReentrantLock();
 
     /** Wait queue for waiting puts */
+    //队列未满条件对象
     private final Condition notFull = putLock.newCondition();
 
     /**
      * Signals a waiting take. Called only from put/offer (which do not
      * otherwise ordinarily lock takeLock.)
      */
+    //唤醒等待非空条件的线程
     private void signalNotEmpty() {
         final ReentrantLock takeLock = this.takeLock;
         takeLock.lock();
@@ -180,6 +185,7 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
     /**
      * Signals a waiting put. Called only from take/poll.
      */
+    //唤醒等待非满条件的线程
     private void signalNotFull() {
         final ReentrantLock putLock = this.putLock;
         putLock.lock();
@@ -195,6 +201,7 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
      *
      * @param node the node
      */
+    //入队列
     private void enqueue(Node<E> node) {
         // assert putLock.isHeldByCurrentThread();
         // assert last.next == null;
@@ -206,6 +213,7 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
      *
      * @return the node
      */
+    //出队列
     private E dequeue() {
         // assert takeLock.isHeldByCurrentThread();
         // assert head.item == null;
@@ -346,6 +354,7 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
              * signalled if it ever changes from capacity. Similarly
              * for all other uses of count in other wait guards.
              */
+            //如果队列已满，需要阻塞等待唤醒
             while (count.get() == capacity) {
                 notFull.await();
             }
@@ -371,7 +380,6 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
      */
     public boolean offer(E e, long timeout, TimeUnit unit)
         throws InterruptedException {
-
         if (e == null) throw new NullPointerException();
         long nanos = unit.toNanos(timeout);
         int c = -1;
@@ -438,6 +446,7 @@ public class LinkedBlockingQueue<E> extends AbstractQueue<E>
         final ReentrantLock takeLock = this.takeLock;
         takeLock.lockInterruptibly();
         try {
+            //如果队列为空，需要阻塞等待唤醒
             while (count.get() == 0) {
                 notEmpty.await();
             }

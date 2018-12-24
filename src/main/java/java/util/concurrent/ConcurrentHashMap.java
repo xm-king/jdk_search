@@ -772,11 +772,13 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * The array of bins. Lazily initialized upon first insertion.
      * Size is always a power of two. Accessed directly by iterators.
      */
+    //Node数组桶
     transient volatile Node<K,V>[] table;
 
     /**
      * The next table to use; non-null only while resizing.
      */
+    //ReHash
     private transient volatile Node<K,V>[] nextTable;
 
     /**
@@ -1021,21 +1023,26 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                 tab = initTable();
             //根据hash计算索引，若该位置为空，则直接插入
             else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
+                //如果第i个位置为空，直接插入
                 if (casTabAt(tab, i, null,
                              new Node<K,V>(hash, key, value, null)))
                     //插入成功，返回
                     break;                   // no lock when adding to empty bin
             }
             else if ((fh = f.hash) == MOVED)
+                //如果正在进行扩容操作
                 tab = helpTransfer(tab, f);
             else {
                 V oldVal = null;
+                //对f节点进行加锁
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
+                        //链表
                         if (fh >= 0) {
                             binCount = 1;
                             for (Node<K,V> e = f;; ++binCount) {
                                 K ek;
+                                //做update操作
                                 if (e.hash == hash &&
                                     ((ek = e.key) == key ||
                                      (ek != null && key.equals(ek)))) {
@@ -1044,6 +1051,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                                         e.val = value;
                                     break;
                                 }
+                                //插入链表尾部
                                 Node<K,V> pred = e;
                                 if ((e = e.next) == null) {
                                     pred.next = new Node<K,V>(hash, key,
@@ -1052,6 +1060,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                                 }
                             }
                         }
+                        //如果是一个红黑树，插入
                         else if (f instanceof TreeBin) {
                             Node<K,V> p;
                             binCount = 2;
@@ -1064,6 +1073,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                         }
                     }
                 }
+                //插入完成后，检查是否需要转换成一个红黑树
                 if (binCount != 0) {
                     //链表长度超过8，将链表转换为树结构
                     if (binCount >= TREEIFY_THRESHOLD)
