@@ -290,6 +290,7 @@ public class CountDownLatch {
      *
      * <p>If the current count equals zero then nothing happens.
      */
+    //计数器减1
     public void countDown() {
         sync.releaseShared(1);
     }

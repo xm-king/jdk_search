@@ -396,17 +396,6 @@ public class ReentrantReadWriteLock
         }
 
         protected final boolean tryAcquire(int acquires) {
-            /*
-             * Walkthrough:
-             * 1. If read count nonzero or write count nonzero
-             *    and owner is a different thread, fail.
-             * 2. If count would saturate, fail. (This can only
-             *    happen if count is already nonzero.)
-             * 3. Otherwise, this thread is eligible for lock if
-             *    it is either a reentrant acquire or
-             *    queue policy allows it. If so, update state
-             *    and set owner.
-             */
             //获取当前线程
             Thread current = Thread.currentThread();
             int c = getState();
@@ -442,6 +431,7 @@ public class ReentrantReadWriteLock
                 else
                     firstReaderHoldCount--;
             } else {
+                //本地线程变量减1
                 HoldCounter rh = cachedHoldCounter;
                 if (rh == null || rh.tid != getThreadId(current))
                     rh = readHolds.get();
@@ -453,6 +443,7 @@ public class ReentrantReadWriteLock
                 }
                 --rh.count;
             }
+            //自旋释放共享锁
             for (;;) {
                 int c = getState();
                 int nextc = c - SHARED_UNIT;
