@@ -696,6 +696,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * If there is a security manager, makes sure caller has
      * permission to modify threads.
      */
+    //验证权限
     private static void checkPermission() {
         SecurityManager security = System.getSecurityManager();
         if (security != null)
@@ -710,6 +711,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * for {@code ForkJoinWorkerThread} subclasses that extend base
      * functionality or initialize threads with different contexts.
      */
+    //线程工厂方法
     public static interface ForkJoinWorkerThreadFactory {
         /**
          * Returns a new worker thread operating in the given pool.
@@ -725,6 +727,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * Default ForkJoinWorkerThreadFactory implementation; creates a
      * new ForkJoinWorkerThread.
      */
+    //默认线程工厂方法
     static final class DefaultForkJoinWorkerThreadFactory
         implements ForkJoinWorkerThreadFactory {
         public final ForkJoinWorkerThread newThread(ForkJoinPool pool) {
@@ -738,6 +741,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * in WorkQueue.tryRemoveAndExec. We don't need the proxy to
      * actually do anything beyond having a unique identity.
      */
+    //空任务
     static final class EmptyTask extends ForkJoinTask<Void> {
         private static final long serialVersionUID = -7721805057305804111L;
         EmptyTask() { status = ForkJoinTask.NORMAL; } // force done
@@ -774,6 +778,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * arrays sharing cache lines. The @Contended annotation alerts
      * JVMs to try to keep instances apart.
      */
+    //任务队列
     @sun.misc.Contended
     static final class WorkQueue {
 
@@ -2028,6 +2033,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @param deadline for timed waits, if nonzero
      * @return task status on exit
      */
+    //等待任务完成或者超时
     final int awaitJoin(WorkQueue w, ForkJoinTask<?> task, long deadline) {
         int s = 0;
         if (task != null && w != null) {

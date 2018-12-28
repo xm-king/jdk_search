@@ -71,12 +71,14 @@ public abstract class RecursiveTask<V> extends ForkJoinTask<V> {
     /**
      * The result of the computation.
      */
+    //返回结果
     V result;
 
     /**
      * The main computation performed by this task.
      * @return the result of the computation
      */
+    //任务执行的主方法
     protected abstract V compute();
 
     public final V getRawResult() {

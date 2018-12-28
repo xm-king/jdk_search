@@ -1858,6 +1858,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
      * @param <U> the type of the value
      * @return the completed CompletableFuture
      */
+    //创建一个设置好结果的CompletableFuture
     public static <U> CompletableFuture<U> completedFuture(U value) {
         return new CompletableFuture<U>((value == null) ? NIL : value);
     }

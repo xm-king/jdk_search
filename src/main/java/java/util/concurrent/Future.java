@@ -116,6 +116,7 @@ public interface Future<V> {
      * typically because it has already completed normally;
      * {@code true} otherwise
      */
+    //取消任务的执行
     boolean cancel(boolean mayInterruptIfRunning);
 
     /**
@@ -124,6 +125,7 @@ public interface Future<V> {
      *
      * @return {@code true} if this task was cancelled before it completed
      */
+    //任务是否已经取消
     boolean isCancelled();
 
     /**
@@ -135,6 +137,7 @@ public interface Future<V> {
      *
      * @return {@code true} if this task completed
      */
+    //任务是否已经结束
     boolean isDone();
 
     /**
@@ -148,6 +151,7 @@ public interface Future<V> {
      * @throws InterruptedException if the current thread was interrupted
      * while waiting
      */
+    //等待任务结束，获取结果
     V get() throws InterruptedException, ExecutionException;
 
     /**
@@ -164,6 +168,7 @@ public interface Future<V> {
      * while waiting
      * @throws TimeoutException if the wait timed out
      */
+    //等待任务结束，获取结果，设置超时时间
     V get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException;
 }
